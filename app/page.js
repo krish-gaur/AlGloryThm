@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import dynamic from 'next/dynamic';
 import { motion, useInView, AnimatePresence } from 'framer-motion';
 import {
   ArrowRight, Sparkles, Bot, Workflow, Cpu, BrainCircuit, Code2, Rocket,
@@ -8,6 +9,8 @@ import {
   MapPin, Menu, X, Mail, Phone, Linkedin, Twitter, Github,
   Globe, ArrowUpRight, Play, Quote, Layers, LineChart, Award
 } from 'lucide-react';
+
+const Hero3D = dynamic(() => import('@/components/Hero3D'), { ssr: false, loading: () => null });
 
 // ============ PARTICLE / NEURAL NETWORK CANVAS ============
 function HeroCanvas() {
@@ -151,7 +154,7 @@ function Nav() {
     { href: '#automation', label: 'Automation' },
     { href: '#portfolio', label: 'Work' },
     { href: '/blog', label: 'Blog' },
-    { href: '#events', label: 'Events' },
+    { href: '/hackathons', label: 'Hackathons' },
     { href: '#contact', label: 'Contact' },
   ];
   return (
@@ -178,7 +181,7 @@ function Nav() {
           ))}
         </nav>
         <div className="hidden lg:flex items-center gap-3">
-          <a href="/admin" className="text-sm text-white/60 hover:text-white transition-colors">Admin</a>
+          <a href="/login" className="text-sm text-white/60 hover:text-white transition-colors">Sign in</a>
           <a href="#contact" className="btn-primary px-5 py-2.5 rounded-lg text-sm inline-flex items-center gap-2">
             Book a Call <ArrowRight className="w-4 h-4" />
           </a>
@@ -212,6 +215,10 @@ function Hero() {
       <div className="aurora w-[400px] h-[400px] bottom-0 left-1/3 bg-[#0099FF]" style={{ opacity: 0.25 }} />
       <div className="absolute inset-0 bg-grid opacity-40" />
       <div className="absolute inset-0"><HeroCanvas /></div>
+      {/* 3D neural network sphere */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-70">
+        <div className="w-full h-full max-w-5xl"><Hero3D /></div>
+      </div>
       <div className="absolute inset-0 bg-spotlight" />
       <div className="absolute inset-x-0 h-px bg-gradient-to-r from-transparent via-[#00D4FF]/50 to-transparent animate-scan" />
 

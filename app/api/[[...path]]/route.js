@@ -3,6 +3,7 @@ import { getDb } from '@/lib/mongodb';
 import { v4 as uuidv4 } from 'uuid';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { sendLeadEmails, sendEventRegistrationEmail, sendHackathonInviteEmail, sendWelcomeEmail } from '@/lib/email';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret';
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@alglorythm.com';
@@ -189,6 +190,7 @@ async function handleRequest(req, params) {
       updatedAt: new Date().toISOString(),
     };
     await db.collection('leads').insertOne(lead);
+    sendLeadEmails(lead).catch((e) => console.error('Lead email failed:', e?.message));
     return jsonResponse({ success: true, data: lead, message: 'Thank you! Our team will reach out within 24 hours.' }, 201);
   }
 
@@ -274,6 +276,8 @@ async function handleRequest(req, params) {
       createdAt: new Date().toISOString(),
     };
     await db.collection('event_registrations').insertOne(reg);
+    const event = await db.collection('events').findOne({ id: eventId }, { projection: { _id: 0 } });
+    sendEventRegistrationEmail(reg, event).catch((e) => console.error('Event email failed:', e?.message));
     return jsonResponse({ success: true, data: reg, message: 'Registration confirmed!' }, 201);
   }
 
@@ -309,6 +313,7 @@ async function handleRequest(req, params) {
       createdAt: new Date().toISOString(),
     };
     await db.collection('users').insertOne(user);
+    sendWelcomeEmail(user).catch((e) => console.error('Welcome email failed:', e?.message));
     const token = jwt.sign({ email: user.email, role: 'USER', id: user.id }, JWT_SECRET, { expiresIn: '7d' });
     return jsonResponse({ success: true, data: { token, user: { email: user.email, role: 'USER', firstName: user.firstName } } }, 201);
   }
@@ -339,6 +344,171 @@ async function handleRequest(req, params) {
       { upsert: true }
     );
     return jsonResponse({ success: true, message: 'Subscribed!' });
+  }
+
+  // ---------- HACKATHONS ----------
+  async function seedHackathonsIfEmpty() {
+    const c = await db.collection('hackathons').countDocuments();
+    if (c > 0) return;
+    await db.collection('hackathons').insertOne({
+      id: uuidv4(),
+      title: 'AlGloryThm AI Builders Hackathon 2025',
+      description: 'A 48-hour intensive hackathon. Build the next generation of AI agents with mentorship from top engineers. \u20b95L prize pool, free swag, food, and the chance to join AlGloryThm.',
+      startDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 21).toISOString(),
+      endDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 23).toISOString(),
+      registrationDeadline: new Date(Date.now() + 1000 * 60 * 60 * 24 * 18).toISOString(),
+      image: 'https://images.unsplash.com/photo-1664526937033-fe2c11f1be25?crop=entropy&cs=srgb&fm=jpg&q=85&w=1200',
+      location: 'Hybrid \u2014 Online + Bangalore',
+      maxTeams: 50,
+      prizePool: '\u20b95,00,000',
+      published: true,
+      createdAt: new Date().toISOString(),
+    });
+  }
+
+  if (route === 'hackathons' && method === 'GET') {
+    await seedHackathonsIfEmpty();
+    const hacks = await db.collection('hackathons').find({ published: true }, { projection: { _id: 0 } }).sort({ startDate: 1 }).toArray();
+    return jsonResponse({ success: true, data: hacks });
+  }
+
+  if (route === 'hackathons/invite-info' && method === 'GET') {
+    const url = new URL(req.url);
+    const token = url.searchParams.get('token');
+    if (!token) return jsonResponse({ success: false, error: 'Token required' }, 400);
+    const invite = await db.collection('hackathon_invites').findOne({ token }, { projection: { _id: 0 } });
+    if (!invite) return jsonResponse({ success: false, error: 'Invalid token' }, 404);
+    const team = await db.collection('hackathon_teams').findOne({ id: invite.teamId }, { projection: { _id: 0 } });
+    const hack = await db.collection('hackathons').findOne({ id: invite.hackathonId }, { projection: { _id: 0 } });
+    return jsonResponse({ success: true, data: { invite, team, hackathon: hack } });
+  }
+
+  if (route === 'hackathons/confirm' && method === 'POST') {
+    const { token, firstName, lastName, linkedIn, github, college, year, skillset, projectInterests } = await req.json();
+    const invite = await db.collection('hackathon_invites').findOne({ token });
+    if (!invite) return jsonResponse({ success: false, error: 'Invalid invitation token' }, 404);
+    if (invite.status === 'CONFIRMED') return jsonResponse({ success: false, error: 'Already confirmed' }, 400);
+    if (new Date(invite.expiresAt) < new Date()) return jsonResponse({ success: false, error: 'Invitation expired' }, 400);
+    await db.collection('hackathon_participants').insertOne({
+      id: uuidv4(),
+      hackathonId: invite.hackathonId,
+      teamId: invite.teamId,
+      email: invite.email,
+      firstName, lastName, linkedIn, github, college, year, skillset, projectInterests,
+      isLeader: false,
+      status: 'CONFIRMED',
+      confirmedAt: new Date().toISOString(),
+      createdAt: new Date().toISOString(),
+    });
+    await db.collection('hackathon_invites').updateOne({ token }, { $set: { status: 'CONFIRMED', confirmedAt: new Date().toISOString() } });
+    const team = await db.collection('hackathon_teams').findOne({ id: invite.teamId }, { projection: { _id: 0 } });
+    return jsonResponse({ success: true, data: { team, message: 'Welcome to the team!' } });
+  }
+
+  if (route.startsWith('hackathons/') && route.endsWith('/teams') && method === 'POST') {
+    const hackathonId = route.split('/')[1];
+    const body = await req.json();
+    const hack = await db.collection('hackathons').findOne({ id: hackathonId });
+    if (!hack) return jsonResponse({ success: false, error: 'Hackathon not found' }, 404);
+    const existing = await db.collection('hackathon_teams').findOne({ hackathonId, teamName: body.teamName });
+    if (existing) return jsonResponse({ success: false, error: 'Team name already taken' }, 400);
+    const teamId = uuidv4();
+    const leaderId = uuidv4();
+    const team = {
+      id: teamId,
+      hackathonId,
+      teamName: body.teamName,
+      teamLeaderId: leaderId,
+      projectName: body.projectName || '',
+      projectDescription: body.projectDescription || '',
+      status: 'PENDING',
+      createdAt: new Date().toISOString(),
+    };
+    await db.collection('hackathon_teams').insertOne(team);
+    const leader = body.leader || {};
+    await db.collection('hackathon_participants').insertOne({
+      id: leaderId,
+      hackathonId,
+      teamId,
+      email: leader.email,
+      firstName: leader.firstName,
+      lastName: leader.lastName,
+      linkedIn: leader.linkedIn,
+      github: leader.github,
+      college: leader.college,
+      year: leader.year,
+      skillset: leader.skillset,
+      projectInterests: leader.projectInterests,
+      isLeader: true,
+      status: 'CONFIRMED',
+      confirmedAt: new Date().toISOString(),
+      createdAt: new Date().toISOString(),
+    });
+    const memberEmails = (body.memberEmails || []).filter((e) => e && e.includes('@'));
+    let invitesSent = 0;
+    for (const email of memberEmails) {
+      const token = uuidv4();
+      const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 72).toISOString();
+      await db.collection('hackathon_invites').insertOne({
+        id: uuidv4(),
+        hackathonId,
+        teamId,
+        email,
+        token,
+        expiresAt,
+        status: 'INVITED',
+        invitedBy: `${leader.firstName} ${leader.lastName || ''}`.trim(),
+        createdAt: new Date().toISOString(),
+      });
+      invitesSent++;
+      sendHackathonInviteEmail({
+        email,
+        teamName: body.teamName,
+        organizerName: `${leader.firstName} ${leader.lastName || ''}`.trim(),
+        token,
+        hackathonTitle: hack.title,
+      }).catch((e) => console.error('Invite email failed:', e?.message));
+    }
+    return jsonResponse({ success: true, data: { team, invitesSent } }, 201);
+  }
+
+  if (route.startsWith('hackathons/') && method === 'GET' && route.split('/').length === 2) {
+    const id = route.split('/')[1];
+    const hack = await db.collection('hackathons').findOne({ id }, { projection: { _id: 0 } });
+    if (!hack) return jsonResponse({ success: false, error: 'Hackathon not found' }, 404);
+    const teams = await db.collection('hackathon_teams').find({ hackathonId: id }, { projection: { _id: 0 } }).toArray();
+    return jsonResponse({ success: true, data: { ...hack, teamsCount: teams.length } });
+  }
+
+  // ---------- BLOG ADMIN (CRUD) ----------
+  if (route === 'admin/blogs' && method === 'GET') {
+    if (!requireAdmin(req)) return jsonResponse({ success: false, error: 'Unauthorized' }, 401);
+    const blogs = await db.collection('blogs').find({}, { projection: { _id: 0 } }).sort({ createdAt: -1 }).toArray();
+    return jsonResponse({ success: true, data: blogs });
+  }
+
+  if (route.startsWith('admin/blogs/') && method === 'GET') {
+    if (!requireAdmin(req)) return jsonResponse({ success: false, error: 'Unauthorized' }, 401);
+    const id = route.split('/')[2];
+    const blog = await db.collection('blogs').findOne({ id }, { projection: { _id: 0 } });
+    if (!blog) return jsonResponse({ success: false, error: 'Not found' }, 404);
+    return jsonResponse({ success: true, data: blog });
+  }
+
+  if (route.startsWith('admin/blogs/') && method === 'PATCH') {
+    if (!requireAdmin(req)) return jsonResponse({ success: false, error: 'Unauthorized' }, 401);
+    const id = route.split('/')[2];
+    const body = await req.json();
+    await db.collection('blogs').updateOne({ id }, { $set: { ...body, updatedAt: new Date().toISOString() } });
+    const blog = await db.collection('blogs').findOne({ id }, { projection: { _id: 0 } });
+    return jsonResponse({ success: true, data: blog });
+  }
+
+  if (route.startsWith('admin/blogs/') && method === 'DELETE') {
+    if (!requireAdmin(req)) return jsonResponse({ success: false, error: 'Unauthorized' }, 401);
+    const id = route.split('/')[2];
+    await db.collection('blogs').deleteOne({ id });
+    return jsonResponse({ success: true });
   }
 
   return jsonResponse({ success: false, error: `Route not found: ${method} /${route}` }, 404);

@@ -123,6 +123,9 @@ function Dashboard({ token, onLogout }) {
             </div>
           </div>
           <div className="flex items-center gap-3">
+            <Link href="/admin/blogs" className="btn-ghost px-4 py-2 rounded-lg text-sm inline-flex items-center gap-2">
+              <FileText className="w-4 h-4" /> Blog editor
+            </Link>
             <Link href="/" className="text-sm text-white/60 hover:text-white">View site</Link>
             <button onClick={onLogout} className="btn-ghost px-4 py-2 rounded-lg text-sm inline-flex items-center gap-2">
               <LogOut className="w-4 h-4" /> Logout

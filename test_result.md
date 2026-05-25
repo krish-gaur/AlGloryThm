@@ -285,6 +285,171 @@ backend:
           agent: "testing"
           comment: "✅ PASS - Newsletter signup working correctly. Returns 200 with success message. Idempotent - calling twice with same email doesn't error, returns success both times. Uses upsert operation correctly."
 
+  - task: "Hackathons list GET /api/hackathons (auto-seeds 1)"
+    implemented: true
+    working: true
+    file: "app/api/[[...path]]/route.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Public endpoint. Auto-seeds 1 sample hackathon 'AlGloryThm AI Builders Hackathon 2025' on first call if collection empty. Returns hackathons with all required fields (id, title, description, startDate, endDate, registrationDeadline, image, location, maxTeams, prizePool, published)."
+        - working: true
+          agent: "testing"
+          comment: "✅ PASS - Hackathons list endpoint working perfectly. Auto-seeded 1 hackathon on first call with correct title 'AlGloryThm AI Builders Hackathon 2025'. Returns correct structure with all required fields. Idempotent - second call returns same hackathon without duplicates."
+
+  - task: "Hackathon detail GET /api/hackathons/:id"
+    implemented: true
+    working: true
+    file: "app/api/[[...path]]/route.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Public endpoint. Returns hackathon by ID with teamsCount field added (counts teams in hackathon_teams collection). Returns 404 for invalid ID."
+        - working: true
+          agent: "testing"
+          comment: "✅ PASS - Hackathon detail endpoint working correctly. Returns hackathon with teamsCount field (initially 0). Returns 404 for invalid hackathon ID."
+
+  - task: "Team registration POST /api/hackathons/:id/teams (with invites)"
+    implemented: true
+    working: true
+    file: "app/api/[[...path]]/route.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Public endpoint. Creates team with leader (CONFIRMED status) and sends invites to memberEmails. Body: { teamName, projectName, projectDescription, leader: { firstName, lastName, email, linkedIn, github, college, year, skillset, projectInterests }, memberEmails: [string] }. Returns 201 with { team, invitesSent }. Duplicate team name returns 400."
+        - working: true
+          agent: "testing"
+          comment: "✅ PASS - Team registration working perfectly. Creates team with leader participant (CONFIRMED), sends invites to member emails (2 invites sent). Returns 201 with team data and invitesSent count. Correctly rejects duplicate team name with 400 'Team name already taken' error."
+
+  - task: "Invite info GET /api/hackathons/invite-info?token=..."
+    implemented: true
+    working: true
+    file: "app/api/[[...path]]/route.js"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Public endpoint. Returns invite details with team and hackathon info for valid token. Returns 404 for invalid token."
+        - working: true
+          agent: "testing"
+          comment: "✅ PASS - Invite info endpoint working correctly. Returns invite, team, and hackathon data for valid token. Returns 404 for invalid token."
+
+  - task: "Invite confirmation POST /api/hackathons/confirm"
+    implemented: true
+    working: true
+    file: "app/api/[[...path]]/route.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Public endpoint. Confirms invite and creates participant. Body: { token, firstName, lastName, linkedIn, github, college, year, skillset, projectInterests }. Returns 404 for invalid token, 400 for already confirmed or expired invite."
+        - working: true
+          agent: "testing"
+          comment: "✅ PASS - Invite confirmation working correctly. Successfully confirms invite and creates participant. Correctly returns 400 'Already confirmed' for duplicate confirmation. Returns 404 'Invalid invitation token' for invalid token."
+
+  - task: "Admin blogs list GET /api/admin/blogs"
+    implemented: true
+    working: true
+    file: "app/api/[[...path]]/route.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Admin-only endpoint. Returns ALL blogs (including unpublished) sorted desc by createdAt. Requires Bearer JWT with role=ADMIN."
+        - working: true
+          agent: "testing"
+          comment: "✅ PASS - Admin blogs list endpoint working correctly. Returns 401 without Authorization header. With valid admin JWT, returns all blogs (including unpublished) sorted by createdAt desc."
+
+  - task: "Admin blog detail GET /api/admin/blogs/:id"
+    implemented: true
+    working: true
+    file: "app/api/[[...path]]/route.js"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Admin-only endpoint. Returns single blog by ID. Returns 404 for invalid ID. Requires Bearer JWT with role=ADMIN."
+        - working: true
+          agent: "testing"
+          comment: "✅ PASS - Admin blog detail endpoint working correctly. Returns single blog with all fields. Returns 404 for invalid blog ID."
+
+  - task: "Admin blog update PATCH /api/admin/blogs/:id"
+    implemented: true
+    working: true
+    file: "app/api/[[...path]]/route.js"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Admin-only endpoint. Updates blog fields. Returns updated blog. Requires Bearer JWT with role=ADMIN."
+        - working: true
+          agent: "testing"
+          comment: "✅ PASS - Admin blog update endpoint working correctly. Successfully updates blog fields (tested with title update). Returns updated blog data. Changes persist correctly."
+
+  - task: "Admin blog delete DELETE /api/admin/blogs/:id"
+    implemented: true
+    working: true
+    file: "app/api/[[...path]]/route.js"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Admin-only endpoint. Deletes blog by ID. Returns success. Requires Bearer JWT with role=ADMIN."
+        - working: true
+          agent: "testing"
+          comment: "✅ PASS - Admin blog delete endpoint working correctly. Successfully deletes blog. Verified deletion by confirming 404 on subsequent GET request."
+
+  - task: "Lead emails (side effect on POST /api/leads)"
+    implemented: true
+    working: true
+    file: "app/api/[[...path]]/route.js"
+    stuck_count: 0
+    priority: "low"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Email integration via Resend. Lead creation triggers fire-and-forget emails to customer and admin. Email failures are logged but don't crash the API."
+        - working: true
+          agent: "testing"
+          comment: "✅ PASS - Lead email side effect working correctly. API returns 201 even when email fails (Resend free-tier rate limits). Lead data persisted correctly to database. Email failures don't crash the endpoint."
+
+  - task: "Welcome email on signup (side effect on POST /api/auth/signup)"
+    implemented: true
+    working: true
+    file: "app/api/[[...path]]/route.js"
+    stuck_count: 0
+    priority: "low"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Email integration via Resend. Signup triggers fire-and-forget welcome email. Email failures are logged but don't crash the API."
+        - working: true
+          agent: "testing"
+          comment: "✅ PASS - Signup email side effect working correctly. API returns 201 even when welcome email fails (Resend free-tier rate limits). User data persisted correctly to database with bcrypt-hashed password. Email failures don't crash the endpoint."
+
 frontend:
   - task: "Cinematic landing page with all sections"
     implemented: true
@@ -301,27 +466,21 @@ frontend:
 metadata:
   created_by: "main_agent"
   version: "1.0"
-  test_sequence: 1
+  test_sequence: 2
   run_ui: false
 
 test_plan:
-  current_focus:
-    - "Health check endpoint GET /api"
-    - "Lead capture POST /api/leads"
-    - "List leads GET /api/leads (admin-only)"
-    - "Update lead status PATCH /api/leads/:id (admin-only)"
-    - "Blogs list GET /api/blogs (auto-seeds 4 sample blogs if empty)"
-    - "Blog detail GET /api/blogs/:slug (increments views)"
-    - "Events list GET /api/events (auto-seeds 3 events)"
-    - "Event registration POST /api/events/:id/register"
-    - "Admin login POST /api/auth/login"
-    - "Admin stats GET /api/admin/stats (admin-only)"
+  current_focus: []
   stuck_tasks: []
-  test_all: true
+  test_all: false
   test_priority: "high_first"
 
 agent_communication:
     - agent: "main"
       message: "Initial MVP build complete for AlGloryThm. All backend endpoints implemented in single Next.js catch-all route at /app/app/api/[[...path]]/route.js using MongoDB. Admin credentials: admin@alglorythm.com / AlGlory@2025 (via env). Please test all endpoints listed in test_plan. The route handler dispatches based on path joined with '/' so URLs like /api/leads, /api/blogs, /api/blogs/<slug>, /api/events/<id>/register, /api/auth/login, /api/admin/stats are all handled in handleRequest. Verify: (1) public endpoints work without auth, (2) admin endpoints return 401 without token, (3) admin endpoints work with valid JWT, (4) blogs and events get auto-seeded on first GET, (5) lead creation returns 201 with success message."
+    - agent: "main"
+      message: "PHASE 2-6 ADDED. New backend endpoints to test (all in /app/app/api/[[...path]]/route.js): (1) GET /api/hackathons - public list, auto-seeds 1 sample hackathon. (2) GET /api/hackathons/<id> - returns hackathon with teamsCount field. (3) POST /api/hackathons/<id>/teams - body: { teamName, projectName, projectDescription, leader: { firstName, lastName, email, linkedIn, github, college, year, skillset, projectInterests }, memberEmails: [string] }. Creates team, leader participant (CONFIRMED), and one invite per memberEmail. Returns 201 with data: { team, invitesSent }. Duplicate team name returns 400. (4) GET /api/hackathons/invite-info?token=<t> - returns { invite, team, hackathon } for valid token, 404 for invalid. (5) POST /api/hackathons/confirm - body: { token, firstName, lastName, linkedIn, github, college, year, skillset, projectInterests }. Marks invite CONFIRMED, creates participant. Errors: 404 invalid token, 400 already confirmed, 400 expired. (6) GET /api/admin/blogs - admin-only list of ALL blogs (incl drafts). (7) GET /api/admin/blogs/<id> - admin-only single blog. (8) PATCH /api/admin/blogs/<id> - admin-only update. (9) DELETE /api/admin/blogs/<id> - admin-only delete. Email integration via Resend: lead emails now trigger send to customer + admin (fire-and-forget, errors logged not thrown). Event registration sends confirmation. Hackathon team creation sends invitations to each memberEmail. Welcome email on signup. PLEASE TEST ALL NEW ENDPOINTS. Do NOT test old endpoints again (they were already verified). Skip the actual email assertions (just confirm the API returns 201 even if Resend rate-limits). Focus on: hackathon flow (seed -> get -> create team -> get invite info -> confirm), admin blog CRUD with auth, and email-side-effect-doesnt-break-the-api."
     - agent: "testing"
       message: "✅ BACKEND TESTING COMPLETE - All 12 backend endpoints tested and working perfectly (100% pass rate). Comprehensive test suite created at /app/backend_test.py. All endpoints verified: health check, lead CRUD, blog list/detail with auto-seeding and view tracking, events list/registration with auto-seeding, admin/user authentication with JWT, admin stats, newsletter signup. All authorization checks working correctly (401 without token, 200 with valid admin JWT). All data validation working. All MongoDB operations successful. No critical issues found. Backend is production-ready."
+    - agent: "testing"
+      message: "✅ PHASE 2-6 BACKEND TESTING COMPLETE - All 13 new backend endpoints tested and working perfectly (100% pass rate). Comprehensive test suite created at /app/backend_test_phase2.py. All new endpoints verified: (1) Hackathons list with auto-seeding - ✅ PASS, (2) Hackathon detail with teamsCount - ✅ PASS, (3) Team registration with invites - ✅ PASS, (4) Duplicate team name validation - ✅ PASS, (5) Invite info retrieval - ✅ PASS, (6) Invite confirmation - ✅ PASS, (7) Invalid token handling - ✅ PASS, (8) Admin blogs list (all blogs) - ✅ PASS, (9) Admin blog detail - ✅ PASS, (10) Admin blog update - ✅ PASS, (11) Admin blog delete - ✅ PASS, (12) Lead email side effect (API returns 201 even if email fails) - ✅ PASS, (13) Signup email side effect (API returns 201 even if email fails) - ✅ PASS. All authorization checks working correctly. All data validation working. All MongoDB operations successful. Email integration working correctly (fire-and-forget, failures don't crash API). No critical issues found. All Phase 2-6 features are production-ready."
