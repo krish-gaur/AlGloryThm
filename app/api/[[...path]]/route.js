@@ -246,7 +246,15 @@ async function handleRequest(req, params) {
     return jsonResponse({ success: true, data: blogs });
   }
 
-  if (route.startsWith('blogs/') && method === 'GET') {
+  if (route.startsWith('blogs/') && route.endsWith('/comments') && method === 'GET') {
+    const slug = route.split('/')[1];
+    const blog = await db.collection('blogs').findOne({ slug }, { projection: { id: 1 } });
+    if (!blog) return jsonResponse({ success: false, error: 'Blog not found' }, 404);
+    const comments = await db.collection('comments').find({ blogId: blog.id }, { projection: { _id: 0 } }).sort({ createdAt: -1 }).toArray();
+    return jsonResponse({ success: true, data: comments });
+  }
+
+  if (route.startsWith('blogs/') && method === 'GET' && !route.includes('/comments')) {
     const slug = route.split('/')[1];
     const blog = await db.collection('blogs').findOne({ slug }, { projection: { _id: 0 } });
     if (!blog) return jsonResponse({ success: false, error: 'Blog not found' }, 404);

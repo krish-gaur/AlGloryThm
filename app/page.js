@@ -819,11 +819,11 @@ function FinalCTA() {
               Ready to ship <span className="text-gradient-blue">AI that works?</span>
             </h2>
             <p className="text-white/70 text-lg max-w-2xl mx-auto mb-10">
-              Limited Q3 slots remaining. Reserve a 30-minute call with a $99 refundable deposit \u2014 we take you seriously, you take us seriously.
+              Limited Q3 slots remaining. Reserve a 30-minute call with a $99 refundable deposit — we take you seriously, you take us seriously.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <button onClick={startPayment} disabled={loading} className="btn-primary px-8 py-4 rounded-xl text-base inline-flex items-center gap-2 disabled:opacity-50">
-                {loading ? 'Loading...' : 'Reserve call \u2014 $99'} <ArrowRight className="w-4 h-4" />
+                {loading ? 'Loading...' : 'Reserve call — $99'} <ArrowRight className="w-4 h-4" />
               </button>
               <a href="#contact" className="btn-ghost px-8 py-4 rounded-xl text-base inline-flex items-center gap-2">
                 Free contact form
