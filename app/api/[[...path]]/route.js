@@ -4,6 +4,12 @@ import { v4 as uuidv4 } from 'uuid';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { sendLeadEmails, sendEventRegistrationEmail, sendHackathonInviteEmail, sendWelcomeEmail } from '@/lib/email';
+import { signParams } from '@/lib/cloudinary';
+import { stripe } from '@/lib/stripe';
+import { generateSecret, verifySync } from 'otplib';
+import qrcode from 'qrcode';
+import { rateLimit, getClientIp } from '@/lib/ratelimit';
+import { sseBus } from '@/lib/sseBus';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret';
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@alglorythm.com';
@@ -169,9 +175,16 @@ async function handleRequest(req, params) {
 
   // ---------- LEADS ----------
   if (route === 'leads' && method === 'POST') {
+    const ip = getClientIp(req);
+    const rl = rateLimit(`leads:${ip}`, { windowMs: 60_000, max: 5 });
+    if (!rl.allowed) return jsonResponse({ success: false, error: 'Too many requests. Please try again shortly.' }, 429);
     const body = await req.json();
     if (!body.email || !body.firstName) {
       return jsonResponse({ success: false, error: 'Email and first name are required' }, 400);
+    }
+    // Honeypot spam protection
+    if (body.website || body.honeypot) {
+      return jsonResponse({ success: true, message: 'Thanks!' }, 201);
     }
     const lead = {
       id: uuidv4(),
@@ -184,6 +197,7 @@ async function handleRequest(req, params) {
       message: body.message || '',
       budget: body.budget || '',
       timeline: body.timeline || '',
+      attachments: body.attachments || [],
       leadStatus: 'NEW',
       source: body.source || 'website',
       createdAt: new Date().toISOString(),
@@ -191,6 +205,7 @@ async function handleRequest(req, params) {
     };
     await db.collection('leads').insertOne(lead);
     sendLeadEmails(lead).catch((e) => console.error('Lead email failed:', e?.message));
+    sseBus.broadcast('lead', { id: lead.id, firstName: lead.firstName, email: lead.email, serviceType: lead.serviceType });
     return jsonResponse({ success: true, data: lead, message: 'Thank you! Our team will reach out within 24 hours.' }, 201);
   }
 
@@ -509,6 +524,212 @@ async function handleRequest(req, params) {
     const id = route.split('/')[2];
     await db.collection('blogs').deleteOne({ id });
     return jsonResponse({ success: true });
+  }
+
+  // ---------- CLOUDINARY UPLOAD SIGNATURE ----------
+  if (route === 'uploads/sign' && method === 'POST') {
+    const { useCase } = await req.json();
+    const timestamp = Math.round(Date.now() / 1000);
+    let params;
+    if (useCase === 'resume') params = { timestamp, folder: 'alglorythm/resumes' };
+    else if (useCase === 'post-thumbnail') params = { timestamp, folder: 'alglorythm/post_thumbnails' };
+    else if (useCase === 'editor-image') params = { timestamp, folder: 'alglorythm/post_images' };
+    else if (useCase === 'lead-attachment') params = { timestamp, folder: 'alglorythm/lead_attachments' };
+    else return jsonResponse({ success: false, error: 'Invalid useCase' }, 400);
+    const signature = signParams(params);
+    return jsonResponse({
+      success: true,
+      data: {
+        signature, timestamp, params,
+        cloudName: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
+        apiKey: process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY,
+      },
+    });
+  }
+
+  // ---------- BLOG COMMENTS ----------
+  if (route.startsWith('blogs/') && route.endsWith('/comments') && method === 'GET') {
+    const slug = route.split('/')[1];
+    const blog = await db.collection('blogs').findOne({ slug }, { projection: { id: 1 } });
+    if (!blog) return jsonResponse({ success: false, error: 'Blog not found' }, 404);
+    const comments = await db.collection('comments').find({ blogId: blog.id }, { projection: { _id: 0 } }).sort({ createdAt: -1 }).toArray();
+    return jsonResponse({ success: true, data: comments });
+  }
+
+  if (route.startsWith('blogs/') && route.endsWith('/comments') && method === 'POST') {
+    const slug = route.split('/')[1];
+    const token = getTokenFromReq(req);
+    if (!token) return jsonResponse({ success: false, error: 'Login required to comment' }, 401);
+    let decoded;
+    try { decoded = jwt.verify(token, JWT_SECRET); } catch { return jsonResponse({ success: false, error: 'Invalid token' }, 401); }
+    const ip = getClientIp(req);
+    const rl = rateLimit(`comment:${decoded.email}:${ip}`, { windowMs: 60_000, max: 5 });
+    if (!rl.allowed) return jsonResponse({ success: false, error: 'Too many comments. Slow down.' }, 429);
+    const body = await req.json();
+    if (!body.content || body.content.trim().length < 2) return jsonResponse({ success: false, error: 'Comment too short' }, 400);
+    const blog = await db.collection('blogs').findOne({ slug });
+    if (!blog) return jsonResponse({ success: false, error: 'Blog not found' }, 404);
+    const comment = {
+      id: uuidv4(),
+      blogId: blog.id,
+      userId: decoded.id,
+      userEmail: decoded.email,
+      userName: decoded.email.split('@')[0],
+      content: body.content.trim().slice(0, 2000),
+      createdAt: new Date().toISOString(),
+    };
+    await db.collection('comments').insertOne(comment);
+    return jsonResponse({ success: true, data: comment }, 201);
+  }
+
+  // ---------- STRIPE CHECKOUT ----------
+  if (route === 'stripe/create-checkout' && method === 'POST') {
+    const body = await req.json();
+    // body: { type: 'consultation_deposit' | 'hackathon_entry' | 'newsletter_pro', ...metadata }
+    const products = {
+      consultation_deposit: { name: 'AlGloryThm Discovery Call Deposit', amount: 9900, description: 'Refundable $99 deposit to confirm your 30-min discovery call.' },
+      hackathon_entry: { name: 'Hackathon Entry Fee', amount: 4900, description: 'Team registration fee for AlGloryThm Hackathon.' },
+      newsletter_pro: { name: 'AlGloryThm Pro Newsletter (1 year)', amount: 9900, description: 'Premium weekly research, frameworks, and templates.' },
+    };
+    const product = products[body.type] || products.consultation_deposit;
+    try {
+      const session = await stripe.checkout.sessions.create({
+        mode: 'payment',
+        payment_method_types: ['card'],
+        line_items: [{
+          price_data: {
+            currency: 'usd',
+            product_data: { name: product.name, description: product.description },
+            unit_amount: product.amount,
+          },
+          quantity: 1,
+        }],
+        success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/payment/cancel`,
+        customer_email: body.email || undefined,
+        metadata: { type: body.type, ...(body.metadata || {}) },
+      });
+      await db.collection('payments').insertOne({
+        id: uuidv4(),
+        stripeSessionId: session.id,
+        type: body.type,
+        amount: product.amount,
+        currency: 'usd',
+        status: 'pending',
+        email: body.email || null,
+        metadata: body.metadata || {},
+        createdAt: new Date().toISOString(),
+      });
+      return jsonResponse({ success: true, data: { url: session.url, sessionId: session.id } });
+    } catch (e) {
+      console.error('Stripe error:', e?.message);
+      return jsonResponse({ success: false, error: e?.message || 'Stripe error' }, 500);
+    }
+  }
+
+  if (route === 'stripe/verify-session' && method === 'GET') {
+    const url = new URL(req.url);
+    const sessionId = url.searchParams.get('session_id');
+    if (!sessionId) return jsonResponse({ success: false, error: 'session_id required' }, 400);
+    try {
+      const session = await stripe.checkout.sessions.retrieve(sessionId);
+      if (session.payment_status === 'paid') {
+        await db.collection('payments').updateOne({ stripeSessionId: sessionId }, { $set: { status: 'paid', paidAt: new Date().toISOString() } });
+      }
+      return jsonResponse({ success: true, data: { status: session.payment_status, email: session.customer_details?.email, amount: session.amount_total } });
+    } catch (e) {
+      return jsonResponse({ success: false, error: e?.message }, 500);
+    }
+  }
+
+  // ---------- ADMIN 2FA (TOTP) ----------
+  if (route === 'admin/2fa/setup' && method === 'POST') {
+    if (!requireAdmin(req)) return jsonResponse({ success: false, error: 'Unauthorized' }, 401);
+    const secretResult = generateSecret();
+    const secret = secretResult.secret || secretResult; // handle both string and object returns
+    const otpauth = `otpauth://totp/AlGloryThm%20Admin:admin@alglorythm.com?secret=${secret}&issuer=AlGloryThm`;
+    const qrDataUrl = await qrcode.toDataURL(otpauth);
+    await db.collection('admin_2fa').updateOne(
+      { email: 'admin@alglorythm.com' },
+      { $set: { pendingSecret: secret, updatedAt: new Date().toISOString() } },
+      { upsert: true }
+    );
+    return jsonResponse({ success: true, data: { qrDataUrl, secret } });
+  }
+
+  if (route === 'admin/2fa/verify' && method === 'POST') {
+    if (!requireAdmin(req)) return jsonResponse({ success: false, error: 'Unauthorized' }, 401);
+    const { code } = await req.json();
+    const rec = await db.collection('admin_2fa').findOne({ email: 'admin@alglorythm.com' });
+    if (!rec?.pendingSecret) return jsonResponse({ success: false, error: 'No setup in progress' }, 400);
+    const result = verifySync({ token: code, secret: rec.pendingSecret });
+    const valid = result?.valid ?? result;
+    if (!valid) return jsonResponse({ success: false, error: 'Invalid code' }, 400);
+    await db.collection('admin_2fa').updateOne(
+      { email: 'admin@alglorythm.com' },
+      { $set: { secret: rec.pendingSecret, enabled: true, activatedAt: new Date().toISOString() }, $unset: { pendingSecret: '' } }
+    );
+    return jsonResponse({ success: true, message: '2FA enabled' });
+  }
+
+  if (route === 'admin/2fa/status' && method === 'GET') {
+    if (!requireAdmin(req)) return jsonResponse({ success: false, error: 'Unauthorized' }, 401);
+    const rec = await db.collection('admin_2fa').findOne({ email: 'admin@alglorythm.com' });
+    return jsonResponse({ success: true, data: { enabled: !!rec?.enabled } });
+  }
+
+  if (route === 'admin/2fa/disable' && method === 'POST') {
+    if (!requireAdmin(req)) return jsonResponse({ success: false, error: 'Unauthorized' }, 401);
+    await db.collection('admin_2fa').deleteOne({ email: 'admin@alglorythm.com' });
+    return jsonResponse({ success: true });
+  }
+
+  // ---------- ADMIN REAL-TIME SSE ----------
+  if (route === 'admin/stream' && method === 'GET') {
+    const url = new URL(req.url);
+    const token = url.searchParams.get('token');
+    if (!token) return jsonResponse({ success: false, error: 'Unauthorized' }, 401);
+    try {
+      const d = jwt.verify(token, JWT_SECRET);
+      if (d.role !== 'ADMIN') return jsonResponse({ success: false, error: 'Forbidden' }, 403);
+    } catch { return jsonResponse({ success: false, error: 'Invalid token' }, 401); }
+    const stream = new ReadableStream({
+      start(controller) {
+        const encoder = new TextEncoder();
+        controller.enqueue(encoder.encode(`event: ping\ndata: connected\n\n`));
+        const cleanup = sseBus.add(controller);
+        const interval = setInterval(() => {
+          try { controller.enqueue(encoder.encode(`event: ping\ndata: ${Date.now()}\n\n`)); } catch { clearInterval(interval); }
+        }, 25_000);
+        req.signal.addEventListener('abort', () => {
+          clearInterval(interval);
+          cleanup();
+          try { controller.close(); } catch {}
+        });
+      },
+    });
+    return new Response(stream, {
+      headers: {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache, no-transform',
+        'Connection': 'keep-alive',
+        'Access-Control-Allow-Origin': '*',
+      },
+    });
+  }
+
+  // ---------- SITEMAP & SEO ----------
+  if (route === 'sitemap' && method === 'GET') {
+    const base = process.env.NEXT_PUBLIC_BASE_URL;
+    const blogs = await db.collection('blogs').find({ published: true }, { projection: { slug: 1, updatedAt: 1 } }).toArray();
+    const events = await db.collection('events').find({ published: true }, { projection: { id: 1, updatedAt: 1 } }).toArray();
+    const staticUrls = ['', '/blog', '/hackathons', '/login', '/signup'];
+    const urls = [
+      ...staticUrls.map((p) => `<url><loc>${base}${p}</loc><changefreq>weekly</changefreq><priority>${p === '' ? '1.0' : '0.7'}</priority></url>`),
+      ...blogs.map((b) => `<url><loc>${base}/blog/${b.slug}</loc><lastmod>${(b.updatedAt || new Date().toISOString()).split('T')[0]}</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>`),
+    ];
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join('\n')}\n</urlset>`;
+    return new Response(xml, { headers: { 'Content-Type': 'application/xml' } });
   }
 
   return jsonResponse({ success: false, error: `Route not found: ${method} /${route}` }, 404);

@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Mail, Building, Phone, Sparkles, ShieldCheck, LogOut, Users, FileText, Calendar, TrendingUp } from 'lucide-react';
+import { ArrowLeft, Mail, Building, Phone, Sparkles, ShieldCheck, LogOut, Users, FileText, Calendar, TrendingUp, Bell, X } from 'lucide-react';
 
 function LoginForm({ onLogin }) {
   const [email, setEmail] = useState('admin@alglorythm.com');
@@ -85,6 +85,7 @@ function Dashboard({ token, onLogout }) {
   const [stats, setStats] = useState(null);
   const [leads, setLeads] = useState([]);
   const [tab, setTab] = useState('overview');
+  const [toasts, setToasts] = useState([]);
 
   const auth = { headers: { Authorization: `Bearer ${token}` } };
 
@@ -94,6 +95,23 @@ function Dashboard({ token, onLogout }) {
   };
 
   useEffect(() => { load(); }, []);
+
+  // SSE real-time notifications
+  useEffect(() => {
+    if (!token) return;
+    const es = new EventSource(`/api/admin/stream?token=${token}`);
+    es.addEventListener('lead', (e) => {
+      try {
+        const data = JSON.parse(e.data);
+        const id = Date.now() + Math.random();
+        setToasts((t) => [...t, { id, ...data }]);
+        setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), 6000);
+        load();
+      } catch {}
+    });
+    es.onerror = () => { /* reconnect handled by EventSource */ };
+    return () => es.close();
+  }, [token]);
 
   const updateStatus = async (id, status) => {
     await fetch(`/api/leads/${id}`, {
@@ -107,6 +125,24 @@ function Dashboard({ token, onLogout }) {
   return (
     <main className="min-h-screen relative">
       <div className="absolute inset-0 bg-grid opacity-20" />
+      {/* SSE Toasts */}
+      <div className="fixed top-20 right-6 z-[100] space-y-3 max-w-sm">
+        {toasts.map((t) => (
+          <div key={t.id} className="glass-strong rounded-xl p-4 border border-[#00D4FF]/30 glow-blue animate-pulse-glow flex items-start gap-3">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#00D4FF] to-[#0066FF] flex items-center justify-center shrink-0">
+              <Bell className="w-4 h-4 text-[#03050B]" />
+            </div>
+            <div className="flex-1">
+              <div className="text-sm font-semibold text-white">New lead: {t.firstName}</div>
+              <div className="text-xs text-white/60 mt-0.5">{t.email}</div>
+              <div className="text-xs text-[#00D4FF] mt-1">{(t.serviceType || '').replace('_', ' ')}</div>
+            </div>
+            <button onClick={() => setToasts((ts) => ts.filter((x) => x.id !== t.id))} className="text-white/40 hover:text-white">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        ))}
+      </div>
       <header className="relative border-b border-white/5 glass-strong sticky top-0 z-40">
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -123,6 +159,9 @@ function Dashboard({ token, onLogout }) {
             </div>
           </div>
           <div className="flex items-center gap-3">
+            <Link href="/admin/2fa" className="btn-ghost px-4 py-2 rounded-lg text-sm inline-flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4" /> 2FA
+            </Link>
             <Link href="/admin/blogs" className="btn-ghost px-4 py-2 rounded-lg text-sm inline-flex items-center gap-2">
               <FileText className="w-4 h-4" /> Blog editor
             </Link>

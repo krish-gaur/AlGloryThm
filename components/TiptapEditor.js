@@ -4,9 +4,12 @@ import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
 import Image from '@tiptap/extension-image';
 import Placeholder from '@tiptap/extension-placeholder';
-import { Bold, Italic, List, ListOrdered, Quote, Code, Link2, Image as ImageIcon, Heading1, Heading2, Heading3, Undo, Redo } from 'lucide-react';
+import { useState } from 'react';
+import { uploadToCloudinary } from '@/lib/clientUpload';
+import { Bold, Italic, List, ListOrdered, Quote, Code, Link2, Image as ImageIcon, Heading1, Heading2, Heading3, Undo, Redo, Loader2 } from 'lucide-react';
 
 export default function TiptapEditor({ value, onChange }) {
+  const [uploading, setUploading] = useState(false);
   const editor = useEditor({
     extensions: [
       StarterKit,
@@ -26,9 +29,9 @@ export default function TiptapEditor({ value, onChange }) {
 
   if (!editor) return null;
 
-  const Btn = ({ onClick, active, children, title }) => (
-    <button type="button" onClick={onClick} title={title}
-      className={`p-2 rounded transition-colors ${active ? 'bg-[#00D4FF]/20 text-[#00D4FF]' : 'text-white/60 hover:bg-white/5 hover:text-white'}`}>
+  const Btn = ({ onClick, active, children, title, disabled }) => (
+    <button type="button" onClick={onClick} title={title} disabled={disabled}
+      className={`p-2 rounded transition-colors disabled:opacity-40 ${active ? 'bg-[#00D4FF]/20 text-[#00D4FF]' : 'text-white/60 hover:bg-white/5 hover:text-white'}`}>
       {children}
     </button>
   );
@@ -37,9 +40,24 @@ export default function TiptapEditor({ value, onChange }) {
     const url = window.prompt('Enter URL');
     if (url) editor.chain().focus().setLink({ href: url }).run();
   };
-  const addImage = () => {
-    const url = window.prompt('Enter image URL');
-    if (url) editor.chain().focus().setImage({ src: url }).run();
+  const addImageUpload = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = async () => {
+      const file = input.files?.[0];
+      if (!file) return;
+      setUploading(true);
+      try {
+        const res = await uploadToCloudinary(file, 'editor-image');
+        editor.chain().focus().setImage({ src: res.secure_url }).run();
+      } catch (e) {
+        alert(`Upload failed: ${e.message}`);
+      } finally {
+        setUploading(false);
+      }
+    };
+    input.click();
   };
 
   return (
@@ -58,7 +76,9 @@ export default function TiptapEditor({ value, onChange }) {
         <Btn onClick={() => editor.chain().focus().toggleCodeBlock().run()} active={editor.isActive('codeBlock')} title="Code"><Code className="w-4 h-4" /></Btn>
         <div className="w-px h-5 bg-white/10 mx-1" />
         <Btn onClick={addLink} active={editor.isActive('link')} title="Link"><Link2 className="w-4 h-4" /></Btn>
-        <Btn onClick={addImage} title="Image"><ImageIcon className="w-4 h-4" /></Btn>
+        <Btn onClick={addImageUpload} title="Upload image" disabled={uploading}>
+          {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ImageIcon className="w-4 h-4" />}
+        </Btn>
         <div className="w-px h-5 bg-white/10 mx-1" />
         <Btn onClick={() => editor.chain().focus().undo().run()} title="Undo"><Undo className="w-4 h-4" /></Btn>
         <Btn onClick={() => editor.chain().focus().redo().run()} title="Redo"><Redo className="w-4 h-4" /></Btn>

@@ -3,7 +3,8 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { ArrowLeft, ArrowRight, Calendar, MapPin, Trophy, Users, X, Plus, CheckCircle2, Mail, Loader2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Calendar, MapPin, Trophy, Users, X, Plus, CheckCircle2, Mail, Loader2, Upload, FileText } from 'lucide-react';
+import { uploadToCloudinary } from '@/lib/clientUpload';
 
 export default function HackathonDetail() {
   const params = useParams();
@@ -18,9 +19,23 @@ export default function HackathonDetail() {
     teamName: '',
     projectName: '',
     projectDescription: '',
-    leader: { firstName: '', lastName: '', email: '', linkedIn: '', github: '', college: '', year: '', skillset: '', projectInterests: '' },
+    leader: { firstName: '', lastName: '', email: '', linkedIn: '', github: '', college: '', year: '', skillset: '', projectInterests: '', resumeUrl: '' },
     memberEmails: [''],
   });
+  const [uploadingResume, setUploadingResume] = useState(false);
+
+  const uploadResume = async (file) => {
+    if (!file) return;
+    setUploadingResume(true);
+    try {
+      const res = await uploadToCloudinary(file, 'resume');
+      updateLeader('resumeUrl', res.secure_url);
+    } catch (e) {
+      alert(`Upload failed: ${e.message}`);
+    } finally {
+      setUploadingResume(false);
+    }
+  };
 
   useEffect(() => {
     if (!id) return;
@@ -169,6 +184,22 @@ export default function HackathonDetail() {
                   </div>
                   <div className="mt-4">
                     <textarea rows={2} placeholder="What are you most interested in building?" value={form.leader.projectInterests} onChange={(e) => updateLeader('projectInterests', e.target.value)} className={inp + ' resize-none'} />
+                  </div>
+                  <div className="mt-4">
+                    <label className="text-xs text-white/50 mb-2 block">Resume (optional, PDF/image)</label>
+                    {form.leader.resumeUrl ? (
+                      <div className="flex items-center gap-3 glass rounded-lg p-3">
+                        <FileText className="w-4 h-4 text-emerald-400" />
+                        <a href={form.leader.resumeUrl} target="_blank" rel="noreferrer" className="text-sm text-[#00D4FF] flex-1 truncate">Resume uploaded \u2713</a>
+                        <button type="button" onClick={() => updateLeader('resumeUrl', '')} className="text-xs text-white/50 hover:text-red-400">Remove</button>
+                      </div>
+                    ) : (
+                      <label className="flex items-center gap-3 glass rounded-lg p-3 cursor-pointer hover:bg-white/5">
+                        {uploadingResume ? <Loader2 className="w-4 h-4 animate-spin text-[#00D4FF]" /> : <Upload className="w-4 h-4 text-[#00D4FF]" />}
+                        <span className="text-sm text-white/70">{uploadingResume ? 'Uploading...' : 'Upload resume'}</span>
+                        <input type="file" accept=".pdf,image/*" className="hidden" onChange={(e) => uploadResume(e.target.files?.[0])} disabled={uploadingResume} />
+                      </label>
+                    )}
                   </div>
                 </div>
 

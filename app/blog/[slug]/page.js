@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Calendar, Eye, User } from 'lucide-react';
 import { useParams } from 'next/navigation';
+import Comments from '@/components/Comments';
 
 export default function BlogDetail() {
   const params = useParams();
@@ -28,8 +29,22 @@ export default function BlogDetail() {
     </main>
   );
 
+  const ldJson = {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: blog.title,
+    description: blog.excerpt,
+    image: blog.thumbnail ? [blog.thumbnail] : undefined,
+    datePublished: blog.createdAt,
+    dateModified: blog.updatedAt || blog.createdAt,
+    author: { '@type': 'Person', name: blog.author },
+    publisher: { '@type': 'Organization', name: 'AlGloryThm', logo: { '@type': 'ImageObject', url: `${process.env.NEXT_PUBLIC_BASE_URL || ''}/icon.png` } },
+    mainEntityOfPage: { '@type': 'WebPage', '@id': `${process.env.NEXT_PUBLIC_BASE_URL || ''}/blog/${blog.slug}` },
+  };
+
   return (
     <main className="min-h-screen relative noise">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ldJson) }} />
       <div className="aurora w-[700px] h-[700px] -top-60 left-1/2 -translate-x-1/2 bg-[#0066FF]" style={{ opacity: 0.2 }} />
       <div className="absolute inset-0 bg-grid opacity-20" />
 
@@ -69,10 +84,17 @@ export default function BlogDetail() {
         )}
 
         <article className="prose prose-invert prose-lg max-w-none">
-          {(blog.content || '').split('\n\n').map((p, i) => (
-            <p key={i} className="text-white/80 leading-relaxed mb-6 text-lg">{p}</p>
-          ))}
+          {blog.content && blog.content.startsWith('<') ? (
+            <div className="text-white/80 leading-relaxed text-lg [&_h1]:text-3xl [&_h1]:font-bold [&_h1]:mt-8 [&_h1]:mb-4 [&_h2]:text-2xl [&_h2]:font-bold [&_h2]:mt-6 [&_h2]:mb-3 [&_h3]:text-xl [&_h3]:font-bold [&_h3]:mt-4 [&_h3]:mb-2 [&_p]:mb-4 [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:mb-4 [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:mb-4 [&_blockquote]:border-l-4 [&_blockquote]:border-[#00D4FF] [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:my-4 [&_a]:text-[#00D4FF] [&_a]:underline [&_code]:bg-white/10 [&_code]:px-1 [&_code]:rounded [&_pre]:bg-white/5 [&_pre]:p-4 [&_pre]:rounded-lg [&_img]:rounded-xl [&_img]:my-4"
+                 dangerouslySetInnerHTML={{ __html: blog.content }} />
+          ) : (
+            (blog.content || '').split('\n\n').map((p, i) => (
+              <p key={i} className="text-white/80 leading-relaxed mb-6 text-lg">{p}</p>
+            ))
+          )}
         </article>
+
+        <Comments slug={slug} />
 
         <div className="mt-20 pt-12 border-t border-white/10">
           <div className="glass-strong rounded-2xl p-8 text-center">

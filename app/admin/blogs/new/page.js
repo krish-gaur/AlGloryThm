@@ -3,7 +3,8 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
-import { ArrowLeft, Save, Eye, Loader2, FileText } from 'lucide-react';
+import { uploadToCloudinary } from '@/lib/clientUpload';
+import { ArrowLeft, Save, Eye, Loader2, FileText, Upload, Image as ImageIcon } from 'lucide-react';
 
 const TiptapEditor = dynamic(() => import('@/components/TiptapEditor'), { ssr: false, loading: () => <div className="glass rounded-xl p-12 text-center text-white/40">Loading editor...</div> });
 
@@ -102,8 +103,27 @@ export default function NewBlog() {
                 <input value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} className={inp} placeholder="auto-generated" />
               </div>
               <div>
-                <label className="text-xs text-white/50 mb-1.5 block">Thumbnail URL</label>
-                <input value={form.thumbnail} onChange={(e) => setForm({ ...form, thumbnail: e.target.value })} className={inp} placeholder="https://..." />
+                <label className="text-xs text-white/50 mb-1.5 block">Thumbnail</label>
+                {form.thumbnail ? (
+                  <div className="relative rounded-lg overflow-hidden group">
+                    <img src={form.thumbnail} className="w-full aspect-video object-cover" alt="thumb" />
+                    <button type="button" onClick={() => setForm({ ...form, thumbnail: '' })} className="absolute top-2 right-2 glass-strong rounded px-2 py-1 text-xs opacity-0 group-hover:opacity-100 transition">Remove</button>
+                  </div>
+                ) : (
+                  <label className="flex flex-col items-center justify-center gap-2 glass rounded-lg p-6 cursor-pointer hover:bg-white/5">
+                    <ImageIcon className="w-6 h-6 text-[#00D4FF]" />
+                    <span className="text-sm text-white/60">Upload thumbnail</span>
+                    <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
+                      const f = e.target.files?.[0];
+                      if (!f) return;
+                      try {
+                        const r = await uploadToCloudinary(f, 'post-thumbnail');
+                        setForm((s) => ({ ...s, thumbnail: r.secure_url }));
+                      } catch (err) { alert(err.message); }
+                    }} />
+                  </label>
+                )}
+                <input value={form.thumbnail} onChange={(e) => setForm({ ...form, thumbnail: e.target.value })} className={inp + ' mt-2 text-xs'} placeholder="Or paste URL" />
               </div>
               <div>
                 <label className="text-xs text-white/50 mb-1.5 block">Author</label>
