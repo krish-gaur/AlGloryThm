@@ -31,8 +31,8 @@ export default function HackathonsPage() {
             Build at <span className="text-gradient-blue">light speed</span>
           </h1>
           <p className="text-xl text-white/60 leading-relaxed">
-            Join AlGloryThm hackathons to ship real AI products in 48 hours. Massive prize pools,
-            mentorship from FAANG engineers, and a shot at joining our team.
+            Join AlGloryThm hackathons to get real AI products in 48 hours. Massive prize pools,
+            mentorship from FAANG engineers and a shot at joining our team.
           </p>
         </div>
 

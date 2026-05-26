@@ -244,8 +244,8 @@ function Hero() {
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3, duration: 0.8 }}
           className="text-lg sm:text-xl text-white/65 max-w-3xl mx-auto mb-10 leading-relaxed"
         >
-          We design and ship enterprise-grade AI automation, custom AI agents, and intelligent SaaS platforms
-          that turn ambitious roadmaps into measurable revenue.
+          We design and ship enterprise grade AI automation, custom AI agents and intelligent SaaS platforms
+          that turn successful roadmaps into measurable revenue.
         </motion.p>
 
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}
@@ -326,12 +326,12 @@ function Stats() {
 
 function Services() {
   const services = [
-    { icon: Bot, title: 'AI Automation', desc: 'End-to-end workflow automation powered by LLMs and intelligent decision engines.', gradient: 'from-[#00D4FF] to-[#0066FF]' },
-    { icon: BrainCircuit, title: 'AI Agents Development', desc: 'Custom agentic systems that plan, reason, and execute across your tools.', gradient: 'from-[#00BFFF] to-[#0099FF]' },
-    { icon: Code2, title: 'SaaS Development', desc: 'AI-first SaaS products built for scale, performance, and conversion.', gradient: 'from-[#00D4FF] to-[#00BFFF]' },
-    { icon: Layers, title: 'Business Consulting', desc: 'Roadmaps, audits, and strategy from teams who have shipped at scale.', gradient: 'from-[#0099FF] to-[#0066FF]' },
+    { icon: Bot, title: 'AI Automation', desc: 'End to end workflow automation powered by LLMs and intelligent decision engines.', gradient: 'from-[#00D4FF] to-[#0066FF]' },
+    { icon: BrainCircuit, title: 'AI Agents Development', desc: 'Custom agentic systems that plan, reason and execute across your tools.', gradient: 'from-[#00BFFF] to-[#0099FF]' },
+    { icon: Code2, title: 'SaaS Development', desc: 'AI first SaaS products built for scale, performance and conversion.', gradient: 'from-[#00D4FF] to-[#00BFFF]' },
+    { icon: Layers, title: 'Business Consulting', desc: 'Roadmaps, audits and strategy from teams who have shipped at scale.', gradient: 'from-[#0099FF] to-[#0066FF]' },
     { icon: Workflow, title: 'Workflow Integration', desc: 'Seamlessly connect AI to Salesforce, HubSpot, Slack, Notion and 200+ tools.', gradient: 'from-[#00B5FF] to-[#0080FF]' },
-    { icon: Cpu, title: 'AI Infrastructure', desc: 'Production-grade RAG, vector DBs, observability, and cost-optimized inference.', gradient: 'from-[#00D4FF] to-[#0044FF]' },
+    { icon: Cpu, title: 'AI Infrastructure', desc: 'Production grade RAG, vector DBs, observability and in cost inference.', gradient: 'from-[#00D4FF] to-[#0044FF]' },
   ];
   return (
     <section id="services" className="py-32 relative">
@@ -376,9 +376,9 @@ function Services() {
 
 function AutomationShowcase() {
   const steps = [
-    { num: '01', title: 'Discover', desc: 'Audit your workflows, identify high-leverage automation candidates.' },
-    { num: '02', title: 'Design', desc: 'Architect the agent graph, model selection, and integration map.' },
-    { num: '03', title: 'Deploy', desc: 'Ship to production with observability, evals, and rollback safety.' },
+    { num: '01', title: 'Discover', desc: 'Audit your workflows, identify high leverage automation candidates.' },
+    { num: '02', title: 'Design', desc: 'Architect the agent graph, model selection and integration map.' },
+    { num: '03', title: 'Deploy', desc: 'Ship to production with observability, evals and rollback safety.' },
     { num: '04', title: 'Scale', desc: 'Continuous improvement loops with feedback signals from real usage.' },
   ];
   return (
@@ -395,7 +395,7 @@ function AutomationShowcase() {
             </h2>
             <p className="text-white/60 text-lg mb-8 leading-relaxed">
               Our four-phase delivery model has shipped 200+ AI systems into production. We obsess over the boring parts:
-              observability, evals, cost controls, and human-in-the-loop safety nets.
+              observability, evals, cost controls and human in the-loop safety nets.
             </p>
             <div className="space-y-4">
               {steps.map((s, i) => (
@@ -447,8 +447,8 @@ function AutomationShowcase() {
 
 function Portfolio() {
   const cases = [
-    { client: 'FinEdge Capital', title: 'AI-powered reconciliation engine', desc: 'Cut month-end close from 11 days to 3. 96% straight-through processing.', tags: ['LLM', 'RAG', 'Finance'], img: 'https://images.unsplash.com/photo-1606778303077-3780ea8d5420?crop=entropy&cs=srgb&fm=jpg&q=85&w=900' },
-    { client: 'MedAxis Health', title: 'Clinical triage agent for 14 hospitals', desc: 'Reduced patient wait times by 41%. HIPAA-compliant, deployed on-prem.', tags: ['Agents', 'Healthcare', 'On-prem'], img: 'https://images.unsplash.com/photo-1664526937033-fe2c11f1be25?crop=entropy&cs=srgb&fm=jpg&q=85&w=900' },
+    { client: 'FinEdge Capital', title: 'AI powered reconciliation engine', desc: 'Cut month end close from 11 days to 3. 96% straight through processing.', tags: ['LLM', 'RAG', 'Finance'], img: 'https://images.unsplash.com/photo-1606778303077-3780ea8d5420?crop=entropy&cs=srgb&fm=jpg&q=85&w=900' },
+    { client: 'MedAxis Health', title: 'Clinical triage agent for 14 hospitals', desc: 'Reduced patient wait times by 41%. HIPAA-compliant and deployed on prem.', tags: ['Agents', 'Healthcare', 'On-prem'], img: 'https://images.unsplash.com/photo-1664526937033-fe2c11f1be25?crop=entropy&cs=srgb&fm=jpg&q=85&w=900' },
     { client: 'ShopVerse', title: 'Personalized commerce AI', desc: 'Lifted conversion 28% in 6 weeks via dynamic product discovery agents.', tags: ['E-commerce', 'Personalization'], img: 'https://images.unsplash.com/photo-1660165458059-57cfb6cc87e5?crop=entropy&cs=srgb&fm=jpg&q=85&w=900' },
   ];
   return (
@@ -461,7 +461,7 @@ function Portfolio() {
             </div>
             <h2 className="text-4xl lg:text-6xl font-bold">Work that <span className="text-gradient-blue">shipped</span></h2>
           </div>
-          <p className="text-white/60 max-w-md text-lg">Real systems. Real outcomes. We move from idea to production in weeks, not quarters.</p>
+          <p className="text-white/60 max-w-md text-lg">Real systems, Real outcomes. We move from idea to production in weeks and not quarters.</p>
         </div>
         <div className="grid lg:grid-cols-3 gap-6">
           {cases.map((c, i) => (
@@ -493,8 +493,8 @@ function Portfolio() {
 function Testimonials() {
   const items = [
     { quote: "AlGloryThm rebuilt our internal ops in 8 weeks. We replaced 60% of our manual workflows with AI agents and saved $2.4M annually. The team operates at FAANG quality with startup speed.", name: 'Anjali Verma', title: 'COO, FinEdge Capital', stars: 5 },
-    { quote: "Their depth on LLM evaluation and production observability is unmatched. We've worked with three other consultancies before \u2014 none came close.", name: 'Daniel Park', title: 'VP Engineering, MedAxis Health', stars: 5 },
-    { quote: "The clearest ROI we've seen on AI investment. 7x return in the first year, deployed safely, governed thoroughly.", name: 'Karan Singh', title: 'CTO, ShopVerse', stars: 5 },
+    { quote: "Their depth on LLM evaluation and production observability is unmatched. We have worked with 3 other consultancies before \u2014 none came close.", name: 'Daniel Park', title: 'VP Engineering, MedAxis Health', stars: 5 },
+    { quote: "The clearest ROI we have seen on AI investment. 7x return in the first year, deployed safely and governed thoroughly.", name: 'Karan Singh', title: 'CTO, ShopVerse', stars: 5 },
   ];
   const [idx, setIdx] = useState(0);
   useEffect(() => {
@@ -598,7 +598,7 @@ function Events() {
           <h2 className="text-4xl lg:text-6xl font-bold mb-4">
             Upcoming <span className="text-gradient-blue">events & hackathons</span>
           </h2>
-          <p className="text-white/60 max-w-2xl mx-auto text-lg">Join the AlGloryThm community of builders. Conferences, hackathons, and deep-tech meetups.</p>
+          <p className="text-white/60 max-w-2xl mx-auto text-lg">Join the AlGloryThm community of builders. Conferences, hackathons and deep tech meetups.</p>
         </div>
         <div className="grid lg:grid-cols-3 gap-6">
           {events.map((e, i) => (
@@ -819,7 +819,7 @@ function FinalCTA() {
               Ready to ship <span className="text-gradient-blue">AI that works?</span>
             </h2>
             <p className="text-white/70 text-lg max-w-2xl mx-auto mb-10">
-              Limited Q3 slots remaining. Reserve a 30-minute call with a $99 refundable deposit — we take you seriously, you take us seriously.
+              Limited Q3 slots remaining. Reserve a 30 minute call with a $99 refundable deposit we take you seriously, you take us seriously.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <button onClick={startPayment} disabled={loading} className="btn-primary px-8 py-4 rounded-xl text-base inline-flex items-center gap-2 disabled:opacity-50">
@@ -855,7 +855,7 @@ function Footer() {
               </span>
             </div>
             <p className="text-white/50 max-w-sm mb-6">
-              Building production-grade AI automation, agents, and intelligent SaaS platforms for ambitious teams.
+              Building production grade AI automation, agents and intelligent SaaS platforms for ambitious teams.
             </p>
             <div className="flex gap-3">
               {[Linkedin, Twitter, Github, Globe].map((Icon, i) => (

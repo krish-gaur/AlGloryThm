@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { NextResponse } from 'next/server';
 import { getDb } from '@/lib/mongodb';
 import { v4 as uuidv4 } from 'uuid';
@@ -50,70 +52,8 @@ function requireAdmin(req) {
 
 async function seedBlogsIfEmpty(db) {
   const count = await db.collection('blogs').countDocuments();
-  if (count > 0) return;
-  const sampleBlogs = [
-    {
-      id: uuidv4(),
-      title: 'The Rise of Autonomous AI Agents in Enterprise',
-      slug: 'autonomous-ai-agents-enterprise',
-      excerpt: 'How custom AI agents are reshaping operations, customer support, and decision-making across Fortune 500 companies in 2025.',
-      content: 'Autonomous AI agents represent the next leap in enterprise automation. Unlike traditional rule-based bots, modern AI agents leverage large language models, tool-use, and persistent memory to plan, execute, and self-correct across complex workflows. In this deep dive, we explore the architecture patterns, ROI metrics, and deployment strategies that leading enterprises use to scale agentic systems safely.\n\nFrom Gartner research, 68% of enterprises will deploy at least one agentic AI system in production by Q4 2025. The economic impact: agents handle 40-70% of tier-1 support, reduce sales cycle by 22%, and unlock $4.4T in annual value globally.',
-      thumbnail: 'https://images.unsplash.com/photo-1664526937033-fe2c11f1be25?crop=entropy&cs=srgb&fm=jpg&q=85&w=1200',
-      author: 'Aryan Mehta',
-      categories: ['AI Agents', 'Enterprise'],
-      tags: ['agents', 'enterprise', 'automation'],
-      published: true,
-      views: 2847,
-      createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(),
-      updatedAt: new Date().toISOString(),
-    },
-    {
-      id: uuidv4(),
-      title: 'Building Production-Grade AI Workflows with LangGraph',
-      slug: 'production-ai-workflows-langgraph',
-      excerpt: 'A practical guide to architecting reliable, observable, and cost-efficient multi-step AI pipelines for high-scale environments.',
-      content: 'LangGraph has emerged as the de-facto framework for orchestrating complex, stateful AI workflows. In this guide we walk through real-world patterns: human-in-the-loop checkpoints, parallel tool execution, retry policies, and cost-aware routing across model tiers.\n\nKey takeaways: design for observability first, treat prompts as code, and version your agent state machines like database migrations.',
-      thumbnail: 'https://images.pexels.com/photos/17489153/pexels-photo-17489153.jpeg?auto=compress&cs=tinysrgb&w=1200',
-      author: 'Sneha Kapoor',
-      categories: ['Engineering', 'AI Infrastructure'],
-      tags: ['langgraph', 'workflows', 'production'],
-      published: true,
-      views: 1903,
-      createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7).toISOString(),
-      updatedAt: new Date().toISOString(),
-    },
-    {
-      id: uuidv4(),
-      title: 'AI Automation ROI: A CFO\u2019s Framework for 2025',
-      slug: 'ai-automation-roi-cfo-framework',
-      excerpt: 'How finance leaders should evaluate, budget, and govern AI automation investments \u2014 with a free spreadsheet template.',
-      content: 'CFOs are under pressure to justify every AI dollar. Our framework breaks down four ROI levers: labor displacement, revenue acceleration, error reduction, and strategic optionality. We include benchmark multiples by industry and a phased capital allocation model.',
-      thumbnail: 'https://images.unsplash.com/photo-1606778303077-3780ea8d5420?crop=entropy&cs=srgb&fm=jpg&q=85&w=1200',
-      author: 'Rohan Iyer',
-      categories: ['Business', 'Strategy'],
-      tags: ['roi', 'cfo', 'strategy'],
-      published: true,
-      views: 1245,
-      createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 14).toISOString(),
-      updatedAt: new Date().toISOString(),
-    },
-    {
-      id: uuidv4(),
-      title: 'From RPA to Agentic Automation: The Migration Playbook',
-      slug: 'rpa-to-agentic-automation-playbook',
-      excerpt: 'Legacy RPA bots are brittle. Here\u2019s how to phase them out and replace with adaptive AI agents without disrupting operations.',
-      content: 'Most enterprises have hundreds of UiPath/Blue Prism bots that break weekly. We outline a 90-day migration plan to swap brittle RPA with agentic AI that adapts to UI changes, handles exceptions natively, and slashes maintenance costs by 80%.',
-      thumbnail: 'https://images.pexels.com/photos/8386437/pexels-photo-8386437.jpeg?auto=compress&cs=tinysrgb&w=1200',
-      author: 'Priya Nair',
-      categories: ['AI Automation', 'Migration'],
-      tags: ['rpa', 'agents', 'migration'],
-      published: true,
-      views: 892,
-      createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 21).toISOString(),
-      updatedAt: new Date().toISOString(),
-    },
-  ];
-  await db.collection('blogs').insertMany(sampleBlogs);
+  
+  await db.collection('blogs');
 }
 
 async function seedEventsIfEmpty(db) {

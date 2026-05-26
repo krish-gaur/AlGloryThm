@@ -92,11 +92,6 @@ export default function LoginPage() {
           Don&apos;t have an account?{' '}
           <Link href="/signup" className="text-[#00D4FF] hover:underline">Sign up</Link>
         </div>
-
-        <div className="mt-8 p-4 glass rounded-lg text-xs text-white/40">
-          <div className="font-semibold text-white/60 mb-2">Demo admin access:</div>
-          <div>admin@alglorythm.com / AlGlory@2025</div>
-        </div>
       </motion.form>
     </main>
   );
