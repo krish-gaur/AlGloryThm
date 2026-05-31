@@ -6,27 +6,27 @@ const inter = Inter({ subsets: ['latin'], display: 'swap', variable: '--font-int
 export const metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL),
   title: {
-    default: 'AlGloryThm - AI Automation & Business Growth',
-    template: '%s | AlGloryThm',
+    default: 'AiGlo - AI Automation & Business Growth',
+    template: '%s | AiGlo',
   },
   icons: {
     icon: '/logo.png', // path to your icon file
     shortcut: '/logo.png',
     apple: '/logo.png',
   },
-  description: 'AlGloryThm builds enterprise-grade AI automation, custom AI agents and intelligent SaaS platforms that drive measurable revenue growth.',
+  description: 'AiGlo builds enterprise-grade AI automation, custom AI agents and intelligent SaaS platforms that drive measurable revenue growth.',
   keywords: ['AI automation', 'AI agents', 'AI consulting', 'business growth', 'SaaS development', 'workflow automation', 'AI infrastructure'],
-  authors: [{ name: 'AlGloryThm' }],
-  creator: 'AlGloryThm',
+  authors: [{ name: 'AiGlo' }],
+  creator: 'AiGlo',
   openGraph: {
     type: 'website',
-    title: 'AlGloryThm - AI Automation & Business Growth',
+    title: 'AiGlo - AI Automation & Business Growth',
     description: 'Enterprise grade AI automation, custom AI agents and intelligent SaaS platforms.',
-    siteName: 'AlGloryThm',
+    siteName: 'AiGlo',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'AlGloryThm - AI Automation & Business Growth',
+    title: 'AiGlo - AI Automation & Business Growth',
     description: 'Enterprise - grade AI automation, custom AI agents and intelligent SaaS platforms.',
   },
   robots: { index: true, follow: true },
