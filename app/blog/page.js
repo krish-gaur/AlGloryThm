@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { ArrowLeft, ArrowRight, Calendar, Eye, Sparkles, Search } from 'lucide-react';
+import Image from 'next/image';
 
 export default function BlogPage() {
   const [blogs, setBlogs] = useState([]);
@@ -63,7 +64,7 @@ export default function BlogPage() {
               <motion.div key={b.id} initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
                 <Link href={`/blog/${b.slug}`} className="group block glass rounded-2xl overflow-hidden card-hover h-full">
                   <div className="aspect-video overflow-hidden relative">
-                    <img src={b.thumbnail} alt={b.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                    <Image src={b.thumbnail} alt={b.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                     <div className="absolute top-4 left-4 flex gap-2">
                       {(b.categories || []).slice(0, 1).map((c) => (
                         <span key={c} className="text-xs px-3 py-1 rounded-full glass-strong text-[#00D4FF]">{c}</span>

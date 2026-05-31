@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Sparkles, LogOut, Calendar, Rocket, ArrowRight, User, BookOpen, Award } from 'lucide-react';
+import Image from 'next/image';
 
 export default function UserDashboard() {
   const router = useRouter();
@@ -92,7 +93,7 @@ export default function UserDashboard() {
             {hackathons.slice(0, 2).map((h) => (
               <Link key={h.id} href={`/hackathons/${h.id}`} className="glass rounded-2xl overflow-hidden card-hover group">
                 <div className="aspect-video overflow-hidden relative">
-                  <img src={h.image} alt={h.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                  <Image src={h.image} alt={h.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#03050B] to-transparent" />
                   <div className="absolute bottom-4 left-4 right-4">
                     <div className="text-xs text-[#00D4FF] mb-1">Prize pool: {h.prizePool}</div>

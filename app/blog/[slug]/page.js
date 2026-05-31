@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { ArrowLeft, Calendar, Eye, User } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import Comments from '@/components/Comments';
+import Image from 'next/image';
 
 export default function BlogDetail() {
   const params = useParams();
@@ -63,7 +64,7 @@ export default function BlogDetail() {
           <span className="text-gradient">{blog.title}</span>
         </h1>
 
-        <p className="text-xl text-white/70 leading-relaxed mb-8">{blog.excerpt}</p>
+        <h2 className="text-xl text-white/70 leading-relaxed mb-8">{blog.excerpt}</h2>
 
         <div className="flex flex-wrap items-center gap-6 mb-12 pb-8 border-b border-white/10">
           <div className="flex items-center gap-2 text-sm text-white/60">
@@ -79,7 +80,7 @@ export default function BlogDetail() {
 
         {blog.thumbnail && (
           <div className="rounded-2xl overflow-hidden mb-12 glow-blue">
-            <img src={blog.thumbnail} alt={blog.title} className="w-full" />
+            <Image src={blog.thumbnail} alt={blog.title} className="w-full" />
           </div>
         )}
 

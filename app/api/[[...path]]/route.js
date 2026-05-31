@@ -14,7 +14,7 @@ import { rateLimit, getClientIp } from '@/lib/ratelimit';
 import { sseBus } from '@/lib/sseBus';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret';
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@alglorythm.com';
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'aiglo2706@gmail.com';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'AlGlory@2025';
 
 function jsonResponse(data, status = 200) {
@@ -110,7 +110,7 @@ async function handleRequest(req, params) {
 
   // ---------- HEALTH ----------
   if (route === '' || route === 'health') {
-    return jsonResponse({ success: true, message: 'AlGloryThm API is live', timestamp: new Date().toISOString() });
+    return jsonResponse({ success: true, message: 'AiGlo API is live', timestamp: new Date().toISOString() });
   }
 
   // ---------- LEADS ----------
@@ -315,8 +315,8 @@ async function handleRequest(req, params) {
     if (c > 0) return;
     await db.collection('hackathons').insertOne({
       id: uuidv4(),
-      title: 'AlGloryThm AI Builders Hackathon 2025',
-      description: 'A 48-hour intensive hackathon. Build the next generation of AI agents with mentorship from top engineers. \u20b95L prize pool, free swag, food, and the chance to join AlGloryThm.',
+      title: 'AiGlo AI Builders Hackathon 2025',
+      description: 'A 48-hour intensive hackathon. Build the next generation of AI agents with mentorship from top engineers. \u20b95L prize pool, free swag, food, and the chance to join AiGlo.',
       startDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 21).toISOString(),
       endDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 23).toISOString(),
       registrationDeadline: new Date(Date.now() + 1000 * 60 * 60 * 24 * 18).toISOString(),
@@ -479,10 +479,10 @@ async function handleRequest(req, params) {
     const { useCase } = await req.json();
     const timestamp = Math.round(Date.now() / 1000);
     let params;
-    if (useCase === 'resume') params = { timestamp, folder: 'alglorythm/resumes' };
-    else if (useCase === 'post-thumbnail') params = { timestamp, folder: 'alglorythm/post_thumbnails' };
-    else if (useCase === 'editor-image') params = { timestamp, folder: 'alglorythm/post_images' };
-    else if (useCase === 'lead-attachment') params = { timestamp, folder: 'alglorythm/lead_attachments' };
+    if (useCase === 'resume') params = { timestamp, folder: 'AiGlo/resumes' };
+    else if (useCase === 'post-thumbnail') params = { timestamp, folder: 'AiGlo/post_thumbnails' };
+    else if (useCase === 'editor-image') params = { timestamp, folder: 'AiGlo/post_images' };
+    else if (useCase === 'lead-attachment') params = { timestamp, folder: 'AiGlo/lead_attachments' };
     else return jsonResponse({ success: false, error: 'Invalid useCase' }, 400);
     const signature = signParams(params);
     return jsonResponse({
@@ -535,9 +535,9 @@ async function handleRequest(req, params) {
     const body = await req.json();
     // body: { type: 'consultation_deposit' | 'hackathon_entry' | 'newsletter_pro', ...metadata }
     const products = {
-      consultation_deposit: { name: 'AlGloryThm Discovery Call Deposit', amount: 9900, description: 'Refundable $99 deposit to confirm your 30-min discovery call.' },
-      hackathon_entry: { name: 'Hackathon Entry Fee', amount: 4900, description: 'Team registration fee for AlGloryThm Hackathon.' },
-      newsletter_pro: { name: 'AlGloryThm Pro Newsletter (1 year)', amount: 9900, description: 'Premium weekly research, frameworks, and templates.' },
+      consultation_deposit: { name: 'AiGlo Discovery Call Deposit', amount: 9900, description: 'Refundable $99 deposit to confirm your 30-min discovery call.' },
+      hackathon_entry: { name: 'Hackathon Entry Fee', amount: 4900, description: 'Team registration fee for AiGlo Hackathon.' },
+      newsletter_pro: { name: 'AiGlo Pro Newsletter (1 year)', amount: 9900, description: 'Premium weekly research, frameworks, and templates.' },
     };
     const product = products[body.type] || products.consultation_deposit;
     try {
@@ -598,7 +598,7 @@ async function handleRequest(req, params) {
     const otpauth = `otpauth://totp/AlGloryThm%20Admin:admin@alglorythm.com?secret=${secret}&issuer=AlGloryThm`;
     const qrDataUrl = await qrcode.toDataURL(otpauth);
     await db.collection('admin_2fa').updateOne(
-      { email: 'admin@alglorythm.com' },
+      { email: 'aiglo2706@gmail.com' },
       { $set: { pendingSecret: secret, updatedAt: new Date().toISOString() } },
       { upsert: true }
     );
@@ -608,13 +608,13 @@ async function handleRequest(req, params) {
   if (route === 'admin/2fa/verify' && method === 'POST') {
     if (!requireAdmin(req)) return jsonResponse({ success: false, error: 'Unauthorized' }, 401);
     const { code } = await req.json();
-    const rec = await db.collection('admin_2fa').findOne({ email: 'admin@alglorythm.com' });
+    const rec = await db.collection('admin_2fa').findOne({ email: 'aiglo2706@gmail.com' });
     if (!rec?.pendingSecret) return jsonResponse({ success: false, error: 'No setup in progress' }, 400);
     const result = verifySync({ token: code, secret: rec.pendingSecret });
     const valid = result?.valid ?? result;
     if (!valid) return jsonResponse({ success: false, error: 'Invalid code' }, 400);
     await db.collection('admin_2fa').updateOne(
-      { email: 'admin@alglorythm.com' },
+      { email: 'aiglo2706@gmail.com' },
       { $set: { secret: rec.pendingSecret, enabled: true, activatedAt: new Date().toISOString() }, $unset: { pendingSecret: '' } }
     );
     return jsonResponse({ success: true, message: '2FA enabled' });
@@ -622,13 +622,13 @@ async function handleRequest(req, params) {
 
   if (route === 'admin/2fa/status' && method === 'GET') {
     if (!requireAdmin(req)) return jsonResponse({ success: false, error: 'Unauthorized' }, 401);
-    const rec = await db.collection('admin_2fa').findOne({ email: 'admin@alglorythm.com' });
+    const rec = await db.collection('admin_2fa').findOne({ email: 'aiglo2706@gmail.com' });
     return jsonResponse({ success: true, data: { enabled: !!rec?.enabled } });
   }
 
   if (route === 'admin/2fa/disable' && method === 'POST') {
     if (!requireAdmin(req)) return jsonResponse({ success: false, error: 'Unauthorized' }, 401);
-    await db.collection('admin_2fa').deleteOne({ email: 'admin@alglorythm.com' });
+    await db.collection('admin_2fa').deleteOne({ email: 'aiglo2706@gmail.com' });
     return jsonResponse({ success: true });
   }
 

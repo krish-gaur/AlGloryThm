@@ -67,12 +67,6 @@ function LoginForm({ onLogin }) {
           </button>
         </div>
 
-        <div className="mt-6 p-4 glass rounded-lg text-xs text-white/50">
-          <div className="font-semibold text-white/70 mb-2">Default credentials:</div>
-          <div>Email: admin@alglorythm.com</div>
-          <div>Password: AlGlory@2025</div>
-        </div>
-
         <Link href="/" className="flex items-center justify-center gap-2 mt-6 text-sm text-white/50 hover:text-[#00D4FF]">
           <ArrowLeft className="w-4 h-4" /> Back to site
         </Link>

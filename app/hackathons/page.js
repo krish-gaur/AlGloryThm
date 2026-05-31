@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { ArrowLeft, ArrowRight, Calendar, MapPin, Trophy, Users, Sparkles } from 'lucide-react';
+import Image from 'next/image';
 
 export default function HackathonsPage() {
   const [hacks, setHacks] = useState([]);
@@ -44,7 +45,7 @@ export default function HackathonsPage() {
               <motion.div key={h.id} initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}
                 className="glass rounded-2xl overflow-hidden card-hover group">
                 <div className="aspect-video relative overflow-hidden">
-                  <img src={h.image} alt={h.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                  <Image src={h.image} alt={h.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#03050B] via-[#03050B]/40 to-transparent" />
                   <div className="absolute top-4 right-4 glass-strong px-3 py-1.5 rounded-full text-xs text-[#00D4FF] flex items-center gap-1">
                     <Trophy className="w-3 h-3" /> {h.prizePool}

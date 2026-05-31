@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { ArrowLeft, ArrowRight, Calendar, MapPin, Trophy, Users, X, Plus, CheckCircle2, Mail, Loader2, Upload, FileText } from 'lucide-react';
 import { uploadToCloudinary } from '@/lib/clientUpload';
+import Image from 'next/image';
 
 export default function HackathonDetail() {
   const params = useParams();
@@ -104,7 +105,7 @@ export default function HackathonDetail() {
           <>
             <div className="glass-strong rounded-2xl overflow-hidden mb-12">
               <div className="aspect-[21/9] relative">
-                <img src={hack.image} alt={hack.title} className="w-full h-full object-cover" />
+                <Image src={hack.image} alt={hack.title} className="w-full h-full object-cover" />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#03050B] via-[#03050B]/40 to-transparent" />
                 <div className="absolute bottom-0 inset-x-0 p-8">
                   <div className="inline-flex glass-strong px-3 py-1 rounded-full text-xs text-[#00D4FF] mb-3">

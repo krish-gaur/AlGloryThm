@@ -9,6 +9,7 @@ import {
   MapPin, Menu, X, Mail, Phone, Linkedin, Twitter, Github,
   Globe, ArrowUpRight, Play, Quote, Layers, LineChart, Award
 } from 'lucide-react';
+import Image from 'next/image';
 
 const Hero3D = dynamic(() => import('@/components/Hero3D'), { ssr: false, loading: () => null });
 
@@ -165,11 +166,11 @@ function Nav() {
             <div className="absolute inset-0 bg-gradient-to-br from-[#00D4FF] to-[#0066FF] rounded-lg rotate-45 group-hover:rotate-[60deg] transition-transform duration-500" />
             <div className="absolute inset-1 bg-[#03050B] rounded-md rotate-45" />
             <div className="absolute inset-0 flex items-center justify-center">
-              <Sparkles className="w-4 h-4 text-[#00D4FF]" />
+              <Image src="/log.png" alt="Logo" width={36} height={36} />
             </div>
           </div>
           <span className="text-xl font-bold tracking-tight">
-            Al<span className="text-gradient-blue">Glory</span>Thm
+            Ai<span className="text-gradient-blue">Glo</span>
           </span>
         </a>
         <nav className="hidden lg:flex items-center gap-8">
@@ -469,7 +470,7 @@ function Portfolio() {
               className="group relative rounded-2xl overflow-hidden card-hover glass border"
             >
               <div className="aspect-[4/3] overflow-hidden relative">
-                <img src={c.img} alt={c.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                <Image src={c.img} alt={c.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#03050B] via-[#03050B]/40 to-transparent" />
               </div>
               <div className="p-6">
@@ -492,7 +493,7 @@ function Portfolio() {
 
 function Testimonials() {
   const items = [
-    { quote: "AlGloryThm rebuilt our internal ops in 8 weeks. We replaced 60% of our manual workflows with AI agents and saved $2.4M annually. The team operates at FAANG quality with startup speed.", name: 'Anjali Verma', title: 'COO, FinEdge Capital', stars: 5 },
+    { quote: "AiGlo rebuilt our internal ops in 8 weeks. We replaced 60% of our manual workflows with AI agents and saved $2.4M annually. The team operates at FAANG quality with startup speed.", name: 'Anjali Verma', title: 'COO, FinEdge Capital', stars: 5 },
     { quote: "Their depth on LLM evaluation and production observability is unmatched. We have worked with 3 other consultancies before \u2014 none came close.", name: 'Daniel Park', title: 'VP Engineering, MedAxis Health', stars: 5 },
     { quote: "The clearest ROI we have seen on AI investment. 7x return in the first year, deployed safely and governed thoroughly.", name: 'Karan Singh', title: 'CTO, ShopVerse', stars: 5 },
   ];
@@ -560,7 +561,7 @@ function BlogPreview() {
             <motion.a key={b.id} href={`/blog/${b.slug}`} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}
               className="group block glass rounded-2xl overflow-hidden card-hover">
               <div className="aspect-video overflow-hidden relative">
-                <img src={b.thumbnail} alt={b.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                <Image src={b.thumbnail} alt={b.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                 <div className="absolute top-4 left-4 flex gap-2">
                   {(b.categories || []).slice(0, 1).map((c) => (
                     <span key={c} className="text-xs px-3 py-1 rounded-full glass-strong text-[#00D4FF]">{c}</span>
@@ -598,14 +599,14 @@ function Events() {
           <h2 className="text-4xl lg:text-6xl font-bold mb-4">
             Upcoming <span className="text-gradient-blue">events & hackathons</span>
           </h2>
-          <p className="text-white/60 max-w-2xl mx-auto text-lg">Join the AlGloryThm community of builders. Conferences, hackathons and deep tech meetups.</p>
+          <p className="text-white/60 max-w-2xl mx-auto text-lg">Join the AiGlo community of builders. Conferences, hackathons and deep tech meetups.</p>
         </div>
         <div className="grid lg:grid-cols-3 gap-6">
           {events.map((e, i) => (
             <motion.div key={e.id} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}
               className="glass rounded-2xl overflow-hidden card-hover">
               <div className="aspect-video relative overflow-hidden">
-                <img src={e.image} alt={e.title} className="w-full h-full object-cover" />
+                <Image src={e.image} alt={e.title} className="w-full h-full object-cover" />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#03050B] via-transparent to-transparent" />
                 <span className="absolute top-4 right-4 text-xs px-3 py-1 rounded-full glass-strong text-[#00D4FF]">{e.eventType}</span>
               </div>
@@ -677,9 +678,9 @@ function Contact() {
             </p>
             <div className="space-y-5">
               {[
-                { icon: Mail, label: 'Email', value: 'hello@alglorythm.com' },
-                { icon: Phone, label: 'Phone', value: '+91 80 4567 8900' },
-                { icon: MapPin, label: 'HQ', value: 'Bangalore \u2022 Mumbai \u2022 Remote' },
+                { icon: Mail, label: 'Email', value: 'aiglo2706@gmail.com' },
+                { icon: Phone, label: 'Phone', value: '+91 9205499346' },
+                { icon: MapPin, label: 'HQ', value: 'New Delhi \u2022 Delhi NCR \u2022 Remote' },
               ].map((c) => (
                 <div key={c.label} className="flex items-start gap-4">
                   <div className="w-10 h-10 rounded-lg glass flex items-center justify-center shrink-0">
@@ -851,19 +852,13 @@ function Footer() {
                 </div>
               </div>
               <span className="text-xl font-bold tracking-tight">
-                Al<span className="text-gradient-blue">Glory</span>Thm
+                Ai<span className="text-gradient-blue">Glo</span>
               </span>
             </div>
             <p className="text-white/50 max-w-sm mb-6">
               Building production grade AI automation, agents and intelligent SaaS platforms for ambitious teams.
             </p>
-            <div className="flex gap-3">
-              {[Linkedin, Twitter, Github, Globe].map((Icon, i) => (
-                <a key={i} href="#" className="w-9 h-9 rounded-lg glass flex items-center justify-center hover:bg-[#00D4FF]/10 transition-colors">
-                  <Icon className="w-4 h-4" />
-                </a>
-              ))}
-            </div>
+            
           </div>
           {[
             { title: 'Product', links: ['Services', 'Automation', 'Agents', 'Infrastructure'] },
@@ -883,7 +878,7 @@ function Footer() {
           ))}
         </div>
         <div className="pt-8 border-t border-white/5 flex flex-col sm:flex-row justify-between gap-4 text-sm text-white/40">
-          <div>&copy; 2025 AlGloryThm. All rights reserved.</div>
+          <div>&copy; 2025 AiGlo. All rights reserved.</div>
           <div className="flex gap-6">
             <a href="#" className="hover:text-white transition-colors">Privacy</a>
             <a href="#" className="hover:text-white transition-colors">Terms</a>
