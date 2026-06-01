@@ -10,9 +10,9 @@ export const metadata = {
     template: '%s | AiGlo',
   },
   icons: {
-    icon: '/logo.png', // path to your icon file
-    shortcut: '/logo.png',
-    apple: '/logo.png',
+    icon: '/logo.jpeg', // path to your icon file
+    shortcut: '/logo.jpeg',
+    apple: '/logo.jpeg',
   },
   description: 'AiGlo builds enterprise-grade AI automation, custom AI agents and intelligent SaaS platforms that drive measurable revenue growth.',
   keywords: ['AI automation', 'AI agents', 'AI consulting', 'business growth', 'SaaS development', 'workflow automation', 'AI infrastructure'],

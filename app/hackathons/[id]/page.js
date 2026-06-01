@@ -52,7 +52,7 @@ const FORM_DEFAULTS = {
 // ─── Component ────────────────────────────────────────────────────────────────
 export default function HackathonDetail() {
   const params = useParams();
-  const id     = params?.id;
+  const id = params?.id;
 
   // ── State ─────────────────────────────────────────────────────────────────
   const [hack,            setHack]            = useState(null);
