@@ -36,7 +36,7 @@ export default function NewBlog() {
     setForm({
       ...form,
       title: v,
-      slug: form.slug || v.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
+      slug: (form.slug || generatedSlug).trim().replace(/^\/+/, ''),
     });
   };
 
