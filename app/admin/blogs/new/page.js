@@ -33,11 +33,16 @@ export default function NewBlog() {
   }, [router]);
 
   const updateTitle = (v) => {
-    setForm({
-      ...form,
-      title: v,
-      slug: (form.slug || generatedSlug).trim().replace(/^\/+/, ''),
-    });
+  const generatedSlug = v
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
+
+  setForm({
+    ...form,
+    title: v,
+    slug: form.slug || generatedSlug,
+  });
   };
 
   const save = async () => {
