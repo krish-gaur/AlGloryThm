@@ -6,12 +6,16 @@ import dynamic from 'next/dynamic';
 import { uploadToCloudinary } from '@/lib/clientUpload';
 import { ArrowLeft, Save, Eye, Loader2, FileText, Upload, Image as ImageIcon } from 'lucide-react';
 
-const TiptapEditor = dynamic(() => import('@/components/TiptapEditor'), { ssr: false, loading: () => <div className="glass rounded-xl p-12 text-center text-white/40">Loading editor...</div> });
+const TiptapEditor = dynamic(() => import('@/components/TiptapEditor'), { 
+  ssr: false, 
+  loading: () => <div className="glass rounded-xl p-12 text-center text-white/40">Loading editor...</div> 
+});
 
 export default function NewBlog() {
   const router = useRouter();
   const [token, setToken] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true); // Added to prevent layout flash
   const [form, setForm] = useState({
     title: '',
     slug: '',
@@ -28,21 +32,25 @@ export default function NewBlog() {
 
   useEffect(() => {
     const t = localStorage.getItem('algt_token');
-    if (!t) { router.push('/admin'); return; }
+    if (!t) { 
+      router.push('/admin'); 
+      return; 
+    }
     setToken(t);
+    setIsCheckingAuth(false); // Only allow rendering if token exists
   }, [router]);
 
   const updateTitle = (v) => {
-  const generatedSlug = v
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '');
+    const generatedSlug = v
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '');
 
-  setForm({
-    ...form,
-    title: v,
-    slug: form.slug || generatedSlug,
-  });
+    setForm({
+      ...form,
+      title: v,
+      slug: form.slug || generatedSlug,
+    });
   };
 
   const save = async () => {
@@ -68,6 +76,16 @@ export default function NewBlog() {
   };
 
   const inp = "w-full glass rounded-lg px-4 py-2.5 text-sm text-white placeholder:text-white/40 focus:outline-none focus:border-[#00D4FF]/60";
+
+  // Loading Guard: Stops unauthenticated users from seeing the UI while checking localstorage
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-screen relative noise bg-black flex items-center justify-center">
+        <div className="absolute inset-0 bg-grid opacity-20" />
+        <Loader2 className="w-8 h-8 text-[#00D4FF] animate-spin relative z-10" />
+      </div>
+    );
+  }
 
   return (
     <main className="min-h-screen relative noise">
