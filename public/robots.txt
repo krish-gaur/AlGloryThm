@@ -1,6 +1,7 @@
 User-agent: *
 Allow: /
+
 Disallow: /admin
 Disallow: /api/
 
-Sitemap: https://276fe8a9-715d-4fff-9bbb-775cf535cdc3.preview.emergentagent.com/sitemap.xml
+Sitemap: https://al-glory-thm.vercel.app/sitemap.xml
